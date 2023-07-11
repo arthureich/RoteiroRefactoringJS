@@ -1,33 +1,24 @@
 const { readFileSync } = require('fs');
 
+class ServicoCalculoFatura {
 
-function formatarMoeda(valor) {
-      return new Intl.NumberFormat("pt-BR",
-        { style: "currency", currency: "BRL",
-          minimumFractionDigits: 2 }).format(valor/100);
-}
-
-function getPeca(pecas, apresentacao) {
-      return pecas[apresentacao.id];
-}
-
-function calcularCredito(pecas, apre) {
-      let creditos = 0;
+   calcularCredito(pecas, apre) {
+     let creditos = 0;
       creditos += Math.max(apre.audiencia - 30, 0);
       if (getPeca(pecas, apre).tipo === "comedia") 
          creditos += Math.floor(apre.audiencia / 5);
-      return creditos;   
-}
-
-function calcularTotalCreditos(pecas, fatura){
-    let total=0;
+      return creditos;  
+   }
+   
+   calcularTotalCreditos(pecas, fatura) {
+      let total=0;
     for (let apre of fatura.apresentacoes) {
-      total+= calcularCredito(pecas, apre);
+      total+= this.calcularCredito(pecas, apre);
     }
     return total;
-}
-
-function calcularTotalApresentacao(pecas, apre) {
+   }
+   
+   calcularTotalApresentacao(pecas, apre) {
       let total = 0;
       switch (getPeca(pecas, apre).tipo) {
       case "tragedia":
@@ -47,24 +38,35 @@ function calcularTotalApresentacao(pecas, apre) {
       default:
           throw new Error(`Peça desconhecia: ${getPeca(pecas, apre).tipo}`);
       }
-}
-
-function calcularTotalFatura(pecas, fatura){
-    let total=0;
+   }
+   
+   calcularTotalFatura(pecas, fatura) {
+       let total=0;
     for (let apre of fatura.apresentacoes) {
-      total+= calcularTotalApresentacao(pecas, apre)
+      total+= this.calcularTotalApresentacao(pecas, apre)
     }
     return total;
+   }
+}
+
+function formatarMoeda(valor) {
+      return new Intl.NumberFormat("pt-BR",
+        { style: "currency", currency: "BRL",
+          minimumFractionDigits: 2 }).format(valor/100);
+}
+
+function getPeca(pecas, apresentacao) {
+      return pecas[apresentacao.id];
 }
 
 function gerarFaturaStr (fatura, pecas) {
     let faturaStr = `Fatura ${fatura.cliente}\n`;
     for (let apre of fatura.apresentacoes) {
-      faturaStr += `  ${getPeca(pecas, apre).nome}: ${formatarMoeda(calcularTotalApresentacao(pecas, apre))} (${apre.audiencia} assentos)\n`;
-      calcularCredito(pecas, apre);
+      faturaStr += `  ${getPeca(pecas, apre).nome}: ${formatarMoeda(calculo.calcularTotalApresentacao(pecas, apre))} (${apre.audiencia} assentos)\n`;
+      calculo.calcularCredito(pecas, apre);
   }
-  faturaStr += `Valor total: ${formatarMoeda(calcularTotalFatura(pecas, fatura))}\n`;
-  faturaStr += `Créditos acumulados: ${calcularTotalCreditos(pecas, fatura)} \n`;
+  faturaStr += `Valor total: ${formatarMoeda(calculo.calcularTotalFatura(pecas, fatura))}\n`;
+  faturaStr += `Créditos acumulados: ${calculo.calcularTotalCreditos(pecas, fatura)} \n`;
    return faturaStr;
   
 }
@@ -72,11 +74,11 @@ function gerarFaturaStr (fatura, pecas) {
 function gerarFaturaHtml (fatura, pecas) {
     let faturaHtml = `<html>\n<p>Fatura ${fatura.cliente}</p>\n<ul>\n`;
     for (let apre of fatura.apresentacoes) {
-      faturaHtml += `<li>${getPeca(pecas, apre).nome}: ${formatarMoeda(calcularTotalApresentacao(pecas, apre))} (${apre.audiencia} assentos)</li>\n`;
-      calcularCredito(pecas, apre);
+      faturaHtml += `<li>${getPeca(pecas, apre).nome}: ${formatarMoeda(calculo.calcularTotalApresentacao(pecas, apre))} (${apre.audiencia} assentos)</li>\n`;
+      calculo.calcularCredito(pecas, apre);
   }
-  faturaHtml += `</ul>\n<p>Valor total: ${formatarMoeda(calcularTotalFatura(pecas, fatura))}</p>\n`;
-  faturaHtml += `<p>Créditos acumulados: ${calcularTotalCreditos(pecas, fatura)}</p>\n</html>`;
+  faturaHtml += `</ul>\n<p>Valor total: ${formatarMoeda(calculo.calcularTotalFatura(pecas, fatura))}</p>\n`;
+  faturaHtml += `<p>Créditos acumulados: ${calculo.calcularTotalCreditos(pecas, fatura)}</p>\n</html>`;
    return faturaHtml;
   
 }
@@ -92,5 +94,5 @@ function main(){
     console.log(faturaHtml)
 }
 
-
+calculo = new ServicoCalculoFatura();
 main();
